@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+	<appender name="STDOUT_BACK" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>%d{HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] [%20.20method] [%.5level] - %msg%n</pattern>
+		</layout>
+	</appender>
+	
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<layout class="ch.qos.logback.classic.PatternLayout">
+			<pattern>[%5.5level] %d{MM-dd HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] - %msg%n</pattern>
+		</layout>
+	</appender>
+	
+	<appender name="DAILYY_ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${APP_LOG}/${APP_PNM}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${APP_LOG}/${APP_PNM}.%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory><!-- keep 30 days' worth of history capped at 3GB total size -->
+			<maxFileSize>1KB</maxFileSize>
+		</rollingPolicy>
+	    <encoder>
+	      <pattern>[%5.5level] %d{MM-dd HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] - %msg%n</pattern>
+	    </encoder>
+	</appender>
+	
+	<appender name="HISTORY" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${APP_LOG}/${APP_PNM}_HISTORY.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${APP_LOG}/${APP_PNM}_HISTORY_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory><!-- keep 30 days' worth of history capped at 3GB total size -->
+			<maxFileSize>100MB</maxFileSize>
+		</rollingPolicy>
+	    <encoder>
+	      <pattern>[%5.5level] %d{MM-dd HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] - %msg%n</pattern>
+	    </encoder>
+	</appender>
+	
+	<appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${APP_LOG}/${APP_PNM}_ERROR.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${APP_LOG}/${APP_PNM}_ERROR_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory><!-- keep 30 days' worth of history capped at 3GB total size -->
+			<maxFileSize>10MB</maxFileSize>
+			<maxFileSize>100MB</maxFileSize>
+		</rollingPolicy>
+	    <encoder>
+	      <pattern>[%5.5level] %d{MM-dd HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] - %msg%n</pattern>
+	    </encoder>
+	</appender>
+
+	<appender name="MYBATIS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${APP_LOG}/${APP_PNM}_MYBATIS.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${APP_LOG}/${APP_PNM}_MYBATIS_%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory><!-- keep 30 days' worth of history capped at 3GB total size -->
+			<maxFileSize>100MB</maxFileSize>
+		</rollingPolicy>
+	    <encoder>
+	      <pattern>[%5.5level] %d{MM-dd HH:mm:ss:SSS} [%20.20class{0}] [%20.20thread] - %msg%n</pattern>
+	    </encoder>
+	</appender>
+
+	<logger name="kr.uracle.ums.fpc" level="DEBUG" additivity="true">
+		<appender-ref ref="DAILYY_ROLLING" /> 
+	</logger>
+	
+	<logger name="HISTORY" level="DEBUG" additivity="true">
+		<appender-ref ref="HISTORY" />
+	</logger>
+	
+	<logger name="ERROR" level="ERROR" additivity="true">
+		<appender-ref ref="ERROR" />
+	</logger>
+	<logger name="mybatis" level="INFO" additivity="true">
+		<appender-ref ref="MYBATIS" />
+	</logger>
+
+	<root level="INFO">
+		<appender-ref ref="STDOUT" />	
+	</root>
+
+</configuration>

@@ -1,0 +1,515 @@
+{
+	
+	"BASE_PATH" : "D:\\TEST\\PITCHEREX",
+	"MYBATIS_PATH" :"C:\\Users\\golde\\git\\file-pitcher\\ums-file-pitcher\\conf\\mybatis-config.xml",
+	"UMS_IPADREESS" : ["http://localhost:8080/", "http://211.241.199.139:8080/"],
+	
+	"UMS_MONIT": {
+		"SERVER_ID": "AP1_FILEPTICHER",
+		"PROGRAM_ID": "FILE_PITCHER",
+		"SERVER_NAME": "UMS_FILE_PITCHER",
+		"CYCLE_TIME": 30000,
+		"API_PATH" : "api/monit/report.ums"
+	},
+	
+	"DUPLEX": {
+		"ACTIVATION": true,
+		"DUPLEX_TYPE": "FILE",
+		"MASTER": true,
+		"EXPIRY_TIME": 180000
+	},
+	
+	"ALARM": {
+		"ACTIVATION": false,
+		"API_PATH": "api/monit/alarmSendApi.ums",
+		"SEND_CHANNEL": "SMS",
+		"PREFIX_MESSAGE": "[AP1 파일 PITCHER] "
+	},
+	
+	"PITCHERS": {
+		"A_PITCHER": {
+			"DETECT_PATH": 	"D:\\TEST\\PITCHEREX\\RECEIVE",
+			"PROCESS_PATH" : "PROCESS",
+			"SUCCESS_PATH": "SUCCESS",
+			"ERROR_PATH": 	"ERROR",
+			"MAX_THREAD": 10,
+			"CYCLE": 3000,
+			"HISTORY_TYPE" : "DB",
+			"HISTORY_INFO" : "mybatis.pitcher.history.recordHistory",
+			"SAVE_DIRECTORY": "yyyyMMdd",
+			"DETECTION": {
+				"NAME"		:"PATTERN_FILE",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.detect.BasicDetect",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"WATCH_TIME": "15000",
+					"PATTERN": ".+[\\.]txt$"
+				}
+			},
+			
+			"FILTER": {
+				"NAME"		:"ZEROSIZE",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.filter.ZeroFileFilter",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false
+			},
+			
+			"PREMODULE":{
+				"NAME"		:"FILE_MOVER",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.pre.RcvToPrcsFileMover",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"DATE_PATTEN": "yyyyMMdd_HHmmss"
+				}
+			},
+			 
+			"MAINMODULE":{
+				"NAME"		:"UMS_CSV_SENDER",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.main.UmsCsvSender",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"CSV_PATH": "D:\\TEST\\PITCHEREX\\CSV\\",
+					"HEADER_LIST": [
+						"아이디",
+						"이름",
+						"핸드폰번호"
+					],
+					"DELIMITER" : "\\|",
+					"URL": "http://localhost:8080",
+					"TRANS_TYPE": "BATCH"
+				}
+			}, 
+			
+			"POSTMODULE":{
+				"NAME"		:"",
+				"CLASS_NAME":"",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+
+				}
+			}
+		}
+	},
+
+	"HELP": {
+		"BASE_PATH" : {
+			"설명" 		: "처리 파일 ROOT 디렉토리 절대 경로(BASE 경로)",
+			"필수여부" 	: "Y",
+			"기본값" 	: "NULL",
+			"타입" 		: "STRING",
+			"길이제한"	: "0"
+		},
+		"MYBATIS_PATH" :{
+			"설명" 		: "MYBATIS 설정 파일 경로 정보(절대 정보, 파일명 포함), DB 연결 필요 시 필수",
+			"필수여부" 	: "Y/N",
+			"기본값" 	: "NULL",
+			"타입" 		: "STRING",
+			"길이제한"	: "0"
+		},
+		"UMS_IPADREESS" : {
+			"설명" 		: "설치된 UMS URL 정보-모니터링 사용 시 필수",
+			"필수여부" 	: "Y/N",
+			"기본값" 	: "NULL",
+			"타입" 		: "STRING ARRAY",
+			"길이제한"	: "0"
+		},
+		"UMS_MONIT": {
+			"설명" 		: "모니터링 정보 설정",
+			"필수여부" 	: "N",
+			"기본값" 	: "NULL",
+			"타입" 		: "MAP",
+			"길이제한"	: "0",
+			"SERVER_ID"	: {
+				"설명" 		: "서버 ID",
+				"필수여부" 	: "N",
+				"기본값" 	: "HOSTNAME+PROGRAM_ID",
+				"타입" 		: "STRING",
+				"길이제한"	: "50"
+			},
+			"PROGRAM_ID": {
+				"설명" 		: "프로그램 ID - 모니터링 사용 시 필수 ",
+				"필수여부" 	: "Y/N",
+				"기본값" 	: "NULL",
+				"타입" 		: "STRING",
+				"길이제한"	: "25"
+			},
+			"SERVER_NAME": {
+				"설명" 		: "서버명",
+				"필수여부" 	: "N",
+				"기본값" 	: "SERVER_ID",
+				"타입" 		: "STRING",
+				"길이제한"	: "50"
+			},
+			"CYCLE_TIME": {
+				"설명" 		: "모니터링 주기",
+				"필수여부" 	: "N",
+				"기본값" 	: "60000",
+				"타입" 		: "LONG",
+				"길이제한"	: "MAX LONG"
+			},
+			"API_PATH" : {
+				"설명" 		: "모니터링 URL PATH",
+				"필수여부" 	: "N",
+				"기본값" 	: "api/monit/alarmSendApi.ums",
+				"타입" 		: "STRING",
+				"길이제한"	: "0"
+			}
+		},
+		"DUPLEX": {
+			"설명" 		: "이중화 설정",
+			"필수여부" 	: "N",
+			"기본값" 	: "NULL",
+			"타입" 		: "MAP",
+			"길이제한"	: "0",
+			"ACTIVATION": {
+				"설명" 		: "이중화 사용 여부",
+				"필수여부" 	: "N",
+				"기본값" 	: "false",
+				"타입" 		: "BOOLEAN",
+				"길이제한"	: "true|false"
+			},
+			"DUPLEX_TYPE": {
+				"설명" 		: "이중화 타입",
+				"필수여부" 	: "Y/N",
+				"기본값" 	: "FILE",
+				"타입" 		: "STRING",
+				"길이제한"	: "DB|FILE"
+			},
+			"MASTER": {
+				"설명" 		: "마스터 여부",
+				"필수여부" 	: "N",
+				"기본값" 	: "true",
+				"타입" 		: "BOOLEAN",
+				"길이제한"	: "true|false"
+			},
+			"EXPIRY_TIME": {
+				"설명" 		: "마스터 전환 기준 만료 시간",
+				"필수여부" 	: "N",
+				"기본값" 	: "180000",
+				"타입" 		: "LONG",
+				"길이제한"	: "MAX LONG"
+			}
+		},
+		"ALARM": {
+			"설명" : "알람 메인 설정",
+			"필수여부" : "N",
+			"기본값" : "NULL",
+			"타입" : "MAP",
+			"길이제한": "0",
+			"ACTIVATION":  {
+				"설명" : "알람 활성화 여부",
+				"필수여부" : "N",
+				"기본값" : "true",
+				"타입" : "BOOLEAN",
+				"길이제한": "true|false"
+			},
+			"API_PATH":{
+				"설명" : "알람 API URL PATH",
+				"필수여부" : "N",
+				"기본값" : "api/monit/alarmSendApi.ums",
+				"타입" : "STRING",
+				"길이제한": "0"
+			},
+			"SEND_CHANNEL": {
+				"설명" : "알람 발송 채널",
+				"필수여부" : "N",
+				"기본값" : "SMS",
+				"타입" : "STRING",
+				"길이제한": "PUSH|SMS"
+			},
+			"PREFIX_MESSAGE": {
+				"설명" : "알람 메시지 접두어",
+				"필수여부" : "N",
+				"기본값" : "NULL",
+				"타입" : "STRING",
+				"길이제한": "0"
+			}
+		},
+		"PITCHERS": {
+			"설명" 		: "PITCHER 설정 모음",
+			"필수여부" 	: "Y",
+			"기본값" 	: "NULL",
+			"타입" 		: "MAP",
+			"길이제한"	: "0",
+			"사용자지정 PITCHER 명": {
+				"DETECT_PATH": 	{
+					"설명" 		: "파일 감시 디렉토리 경로",
+					"필수여부" 	: "Y",
+					"기본값" 	: "${BASE_PATH}/DETECT",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"PROCESS_PATH" :{
+					"설명" 		: "처리 중 파일 저장 디렉토리 경로",
+					"필수여부" 	: "N",
+					"기본값" 	: "${BASE_PATH}/PROCESS",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"SUCCESS_PATH": {
+					"설명" 		: "처리 성공 파일 저장 디렉토리 경로",
+					"필수여부" 	: "N",
+					"기본값" 	: "${BASE_PATH}/SUCCESS",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"ERROR_PATH":{
+					"설명" 		: "처리 실패 파일 저장 디렉토리 경로",
+					"필수여부" 	: "N",
+					"기본값" 	: "${BASE_PATH}/ERROR",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"MAX_THREAD": {
+					"설명" 		: "파일 동시 처리 갯수",
+					"필수여부" 	: "N",
+					"기본값" 	: "5",
+					"타입" 		: "INTEGER",
+					"길이제한"	: "INTEGER MAX"
+				},
+				"CYCLE": {
+					"설명" 		: "PITCHER 동작 주기",
+					"필수여부" 	: "N",
+					"기본값" 	: "30000",
+					"타입" 		: "LONG",
+					"길이제한"	: "LONG MAX"
+				},
+				"HISTORY_TYPE" : {
+					"설명" 		: "히스토리 저장 방식",
+					"필수여부" 	: "N",
+					"기본값" 	: "DB",
+					"타입" 		: "STRING",
+					"길이제한"	: "DB|LOG"
+				},
+				"HISTORY_INFO" :  {
+					"설명" 		: "히스토리 저장 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "mybatis.pitcher.history.recordHistory",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"SAVE_DIRECTORY": {
+					"설명" 		: "파일 저장 디렉토리 패턴 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "NULL",
+					"타입" 		: "STRING",
+					"길이제한"	: "0"
+				},
+				"DETECTION": {
+					"설명" 		: "DETECT 설정 정보",
+					"필수여부" 	: "Y",
+					"기본값" 	: "NULL",
+					"타입" 		: "MAP",
+					"길이제한"	: "0",
+					"NAME":{
+						"설명" 		: "DETECT 이름",
+						"필수여부" 	: "N",
+						"기본값" 	: "CLASS NAME",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"CLASS_NAME":{
+						"설명" 		: "DETECT 구현 CLASS 전체 정보",
+						"필수여부" 	: "Y",
+						"기본값" 	: "NULL",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"SUCCESS_ALRAM" : {
+						"설명" 		: "파일 감지 성공 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"ERROR_ALRAM" :{
+						"설명" 		: "파일 감지 중 에러 발생 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값"		: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"PARAM_MAP" :{
+						"설명" 		: "구현 클래스에서 사용할 지정 설정 정보 맵",
+						"필수여부" 	: "N",
+						"기본값" 	: "NULL",
+						"타입" 		: "MAP",
+						"길이제한"	: "0"
+					}
+				},
+				"FILTER": {
+					"설명" 		: "FILTER 설정 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "NULL",
+					"타입" 		: "MAP",
+					"길이제한"	: "0",
+					"NAME"	:{
+						"설명" 		: "FILTER 이름",
+						"필수여부" 	: "N",
+						"기본값" 	: "CLASS NAME",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"CLASS_NAME":{
+						"설명" 		: "FILTER 구현 CLASS 전체 정보",
+						"필수여부" 	: "Y",
+						"기본값" 	: "NULL",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"SUCCESS_ALRAM" : {
+						"설명" 		: "필터 성공 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"ERROR_ALRAM" :{
+						"설명" 		: "필터링 중 에러 발생 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"PARAM_MAP" :{
+						"설명" 		: "구현 클래스에서 사용할 지정 설정 정보 맵",
+						"필수여부" 	: "N",
+						"기본값" 	: "NULL",
+						"타입" 		: "MAP",
+						"길이제한"	: "0"
+					}
+				},
+				"PREMODULE": {
+					"설명" 		: "전처리기 설정 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "NULL",
+					"타입" 		: "MAP",
+					"길이제한"	: "0",
+					"NAME":{
+						"설명" 		: "전처리기 이름",
+						"필수여부" 	: "N",
+						"기본값" 	: "CLASS NAME",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"CLASS_NAME":{
+						"설명" 		: "전처리기 구현 CLASS 전체 정보",
+						"필수여부" 	: "Y",
+						"기본값" 	: "NULL",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"SUCCESS_ALRAM" : {
+						"설명" 		: "전처리기 성공 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"ERROR_ALRAM" :{
+						"설명" 		: "전처리 중 에러 발생 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"PARAM_MAP" :{
+						"설명" 		: "구현 클래스에서 사용할 지정 설정 정보 맵",
+						"필수여부" 	: "N",
+						"기본값" 	: "NULL",
+						"타입" 		: "MAP",
+						"길이제한"	: "0"
+					}
+				},
+				"MAINMODULE": {
+					"설명" 		: "본처리기 설정 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "NULL",
+					"타입" 		: "MAP",
+					"길이제한"	: "0",
+					"NAME"	:{
+						"설명" 		: "본처리기 이름",
+						"필수여부" 	: "N",
+						"기본값" 	: "CLASS NAME",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"CLASS_NAME":{
+						"설명" 		: "본처리기 구현 CLASS 전체 정보",
+						"필수여부" 	: "Y",
+						"기본값" 	: "NULL",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"SUCCESS_ALRAM" : {
+						"설명" 		: "본처리기 성공 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"ERROR_ALRAM" :{
+						"설명" 		: "본처리 중 에러 발생 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"PARAM_MAP" :{
+						"설명" 		: "구현 클래스에서 사용할 지정 설정 정보 맵",
+						"필수여부" 	: "N",
+						"기본값" 	: "NULL",
+						"타입" 		: "MAP",
+						"길이제한"	: "0"
+					}
+				},
+				"POSTMODULE": {
+					"설명" 		: "후처리기 설정 정보",
+					"필수여부" 	: "N",
+					"기본값" 	: "NULL",
+					"타입" 		: "MAP",
+					"길이제한"	: "0",
+					"NAME"	:{
+						"설명" 		: "후처리기 이름",
+						"필수여부" 	: "N",
+						"기본값" 	: "CLASS NAME",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"CLASS_NAME":{
+						"설명" 		: "후처리기 구현 CLASS 전체 정보",
+						"필수여부" 	: "Y",
+						"기본값" 	: "NULL",
+						"타입" 		: "STRING",
+						"길이제한"	: "0"
+					},
+					"SUCCESS_ALRAM" : {
+						"설명" 		: "후처리기 성공 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"ERROR_ALRAM" :{
+						"설명" 		: "후처리 중 에러 발생 시 알람 발송 여부 - ALRAM 설정의 ACTIVATION 항목이 우선순위가 높음",
+						"필수여부" 	: "N",
+						"기본값" 	: "false",
+						"타입" 		: "BOOLEAN",
+						"길이제한"	: "true|false"
+					},
+					"PARAM_MAP" :{
+						"설명" 		: "구현 클래스에서 사용할 지정 설정 정보 맵",
+						"필수여부" 	: "N",
+						"기본값" 	: "NULL",
+						"타입" 		: "MAP",
+						"길이제한"	: "0"
+					}
+				}
+			}
+		}
+	}
+}

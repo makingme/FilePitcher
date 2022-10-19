@@ -1,0 +1,98 @@
+{
+	
+	"BASE_PATH" : "/home/ums/file-pitcher/files/",
+	"MYBATIS_PATH" :"",
+	"UMS_IPADREESS" : ["http://localhost:8080/", "http://211.241.199.137:8080/"],
+	
+	"UMS_MONIT": {
+		"SERVER_ID": "AP1_FILEPTICHER",
+		"PROGRAM_ID": "FILE_PITCHER",
+		"SERVER_NAME": "UMS_FILE_PITCHER",
+		"CYCLE_TIME": 30000,
+		"API_PATH" : "api/monit/report.ums"
+	},
+	
+	"DUPLEX": {
+		"ACTIVATION": true,
+		"DUPLEX_TYPE": "FILE",
+		"IS_MASTER": true,
+		"EXPIRY_TIME": 30000
+	},
+	
+	"ALARM": {
+		"ACTIVATION": false,
+		"API_PATH": "api/monit/alarmSendApi.ums",
+		"SEND_CHANNEL": "SMS",
+		"PREFIX_MESSAGE": "[AP1 파일 PITCHER] "
+	},
+	
+	"PITCHERS": {
+		"A_PITCHER": {
+			"DETECT_PATH": 	"RECEIVE",
+			"PROCESS_PATH" : "PROCESS",
+			"SUCCESS_PATH": "SUCCESS",
+			"ERROR_PATH": 	"ERROR",
+			"MAX_THREAD": 10,
+			"CYCLE": 3000,
+			"LOG_TYPE" : "LOG",
+			"LOG_INFO" : "mybatis.pitcher.history.recordHistory",
+			"SAVE_PATTERN": "yyyyMMdd",
+			
+			"DETECTION": {
+				"NAME"		:"PATTERN_FILE",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.detect.BasicDetect",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"WATCH_TIME": "15000",
+					"PATTERN": ".+[\\.]txt$"
+				}
+			},
+			
+			"FILTER": {
+				"NAME"		:"ZEROSIZE",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.filter.ZeroFileFilter",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false
+			},
+			
+			"PREMODULE":{
+				"NAME"		:"FILE_MOVER",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.pre.FileMovePreHandle",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"DATE_PATTEN": "yyyyMMdd_HHmmss"
+				}
+			},
+			 
+			"MAINMODULE":{
+				"NAME"		:"UMS_CSV_SENDER",
+				"CLASS_NAME":"kr.uracle.ums.fpc.module.main.CsvSendMainHandle",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+					"CSV_PATH": "/home/ums/file-pitcher/files/CSV",
+					"HEADER_LIST": [
+						"아이디",
+						"이름",
+						"핸드폰번호"
+					],
+					"DELIMITER" : "\\|",
+					"URL": "http://localhost:8080",
+					"TRANS_TYPE": "BATCH"
+				}
+			}, 
+			
+			"POSTMODULE":{
+				"NAME"		:"",
+				"CLASS_NAME":"",
+				"SUCCESS_ALRAM" : false,
+				"ERROR_ALRAM" : false,
+				"PARAM_MAP" : {
+
+				}
+			}
+		}
+	}
+}
