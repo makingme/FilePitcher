@@ -48,6 +48,6 @@
 
 	</environments>
 	<mappers>
-		<mapper url="file:C:\\Users\\golde\\git\\file-pitcher\\ums-file-pitcher\\conf\\sqlmap\\ORACLE\\history.xml" />
+		<mapper url="file:D:\STORE\SOURCES\URACLE\ums\ums-file-pitcher\ums-file-pitcher.3.0.X\trunk\conf\sqlmap\ORACLE\\history.xml" />
 	</mappers>
 </configuration>

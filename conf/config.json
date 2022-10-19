@@ -1,7 +1,7 @@
 {
 	
 	"BASE_PATH" : "D:\\TEST\\PITCHEREX",
-	"MYBATIS_PATH" :"C:\\Users\\golde\\git\\file-pitcher\\ums-file-pitcher\\conf\\mybatis-config.xml",
+	"MYBATIS_PATH" :"D:\\STORE\\SOURCES\\URACLE\\ums\\ums-file-pitcher\\ums-file-pitcher.3.0.X\\trunk\\conf\\mybatis-config.xml",
 	"UMS_IPADREESS" : ["http://localhost:8080/", "http://211.241.199.139:8080/"],
 	
 	"UMS_MONIT": {

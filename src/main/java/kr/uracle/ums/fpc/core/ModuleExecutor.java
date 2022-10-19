@@ -51,7 +51,10 @@ public class ModuleExecutor extends Thread{
 		this.taskVo = new TaskVo(p);
 		this.YYYYMMDD = DIRECTORY_PATTERN;
 		workState = WorkState.FULL;
-		notify();
+		synchronized (this){
+			this.notify();
+			LOGGER.debug("{} 일 주입으로 깨어 남", getName());
+		}
 		return true;
 	}
 
@@ -71,7 +74,9 @@ public class ModuleExecutor extends Thread{
 			if(workState == WorkState.EMPTY){
 				LOGGER.debug(this.getName() + " - 일감 없음으로 대기");
 				try {
-					wait();
+					synchronized (this){
+						this.wait();
+					}
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
