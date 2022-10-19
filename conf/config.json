@@ -34,8 +34,7 @@
 			"ERROR_PATH": 	"ERROR",
 			"MAX_THREAD": 10,
 			"CYCLE": 3000,
-			"HISTORY_TYPE" : "DB",
-			"HISTORY_INFO" : "mybatis.pitcher.history.recordHistory",
+			"DBMS_ID" : "development",
 			"SAVE_DIRECTORY": "yyyyMMdd",
 			"DETECTION": {
 				"NAME"		:"PATTERN_FILE",
@@ -278,17 +277,10 @@
 					"타입" 		: "LONG",
 					"길이제한"	: "LONG MAX"
 				},
-				"HISTORY_TYPE" : {
-					"설명" 		: "히스토리 저장 방식",
+				"DBMS_ID" : {
+					"설명" 		: "사용할 DBMS ENV ID - mybatis-config.xml 참조",
 					"필수여부" 	: "N",
-					"기본값" 	: "DB",
-					"타입" 		: "STRING",
-					"길이제한"	: "DB|LOG"
-				},
-				"HISTORY_INFO" :  {
-					"설명" 		: "히스토리 저장 정보",
-					"필수여부" 	: "N",
-					"기본값" 	: "mybatis.pitcher.history.recordHistory",
+					"기본값" 	: "null",
 					"타입" 		: "STRING",
 					"길이제한"	: "0"
 				},

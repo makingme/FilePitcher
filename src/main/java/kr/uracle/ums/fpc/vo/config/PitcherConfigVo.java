@@ -10,8 +10,8 @@ public class PitcherConfigVo {
 	private String ERROR_PATH;
 	private int MAX_THREAD = 10;
 	private Long CYCLE;
-	private HISTORY_KIND HISTORY_TYPE = HISTORY_KIND.DB;
-	private String HISTORY_INFO;
+
+	private String DBMS_ID;
 
 	private String SAVE_DIRECTORY;
 
@@ -37,13 +37,9 @@ public class PitcherConfigVo {
 	public void setMAX_THREAD(int mAX_THREAD) { MAX_THREAD = mAX_THREAD; }	
 	
 	public Long getCYCLE() { return CYCLE; }
-	public void setCYCLE(Long cYCLE) { CYCLE = cYCLE; }	
-	
-	public HISTORY_KIND getHISTORY_TYPE() { return HISTORY_TYPE;	}
-	public void setHISTORY_TYPE(HISTORY_KIND lOG_TYPE) { HISTORY_TYPE = lOG_TYPE;	}
-	
-	public String getHISTORY_INFO() { return HISTORY_INFO;	}
-	public void setHISTORY_INFO(String lOG_INFO) { HISTORY_INFO = lOG_INFO;	}
+	public void setCYCLE(Long cYCLE) { CYCLE = cYCLE; }
+	public String getDBMS_ID() {return DBMS_ID;}
+	public void setDBMS_ID(String DBMS_ID) {this.DBMS_ID = DBMS_ID;}
 
 	public String getSAVE_DIRECTORY() { return SAVE_DIRECTORY;	}
 	public void setSAVE_DIRECTORY(String SAVE_DIRECTORY) { this.SAVE_DIRECTORY = SAVE_DIRECTORY; }

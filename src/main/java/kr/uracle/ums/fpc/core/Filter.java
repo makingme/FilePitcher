@@ -1,18 +1,16 @@
 package kr.uracle.ums.fpc.core;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import kr.uracle.ums.fpc.utils.HistoryManager;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +19,6 @@ import com.google.gson.Gson;
 
 import kr.uracle.ums.fpc.enums.PATH_KIND;
 import kr.uracle.ums.fpc.utils.AlarmManager;
-import kr.uracle.ums.fpc.utils.HistoryManager;
 import kr.uracle.ums.fpc.vo.config.AlarmConfigVo;
 import kr.uracle.ums.fpc.vo.config.ModuleConfigaVo;
 import kr.uracle.ums.fpc.vo.module.HistoryVo;
@@ -63,6 +60,8 @@ public abstract class Filter {
 	protected final boolean SUCCESS_ALARM;
 	protected final boolean ERROR_ALARM;
 
+	private final String SERVER_ID;
+	private final String DBMS_ID;
 	private String YYYYMMDD;
 	
 	private final AlarmConfigVo ALARM_CONFIG;
@@ -77,10 +76,12 @@ public abstract class Filter {
 		this.PROCESS_PATH = MODULE_CONFIG.PATH_MAP(PATH_KIND.PROCESS).toString()+File.separator;
 		this.SUCCESS_PATH = MODULE_CONFIG.PATH_MAP(PATH_KIND.SUCCESS).toString()+File.separator;
 		this.ERROR_PATH = MODULE_CONFIG.PATH_MAP(PATH_KIND.ERROR).toString()+File.separator;
-		
 		this.PARAM_MAP = MODULE_CONFIG.getPARAM_MAP();
+
+		this.SERVER_ID = MODULE_CONFIG.getSERVER_ID();
+		this.DBMS_ID = MODULE_CONFIG.getSERVER_ID();
+
 		this.ALARM_CONFIG = ALARM_CONFIG;
-		
 		SUCCESS_ALARM = MODULE_CONFIG.isSUCCESS_ALRAM();
 		ERROR_ALARM = MODULE_CONFIG.isERROR_ALRAM();
 	}
@@ -98,15 +99,13 @@ public abstract class Filter {
 	abstract public boolean process(Path path) throws Exception;
 	
 	
-	public boolean filtering(List<Path> pathList, HistoryVo historyVo, String yyyyMMdd){
+	public boolean filtering(List<Path> pathList, String yyyyMMdd){
 		YYYYMMDD = yyyyMMdd;
 
 		int totalSize = pathList.size();
 		boolean isOk = false;
 		Iterator<Path> iter = pathList.iterator();
-		
-		historyVo.setPROGRAM_ID(PROCESS_NAME);
-		
+
 		List<Path> filterList = new ArrayList<Path>();
 		Path path  =  null;
 		while(iter.hasNext()) {
@@ -129,13 +128,16 @@ public abstract class Filter {
 		// 필터 처리 여부 확인
 		int diffCnt = totalSize - pathList.size();
 		if(diffCnt>0 && SUCCESS_ALARM)sendAlarm((diffCnt)  +"개 파일 필터 처리 됨");
-		
+
+		HistoryVo historyVoEx = new HistoryVo();
+		historyVoEx.setSERVER_ID(SERVER_ID);
+		historyVoEx.setPROGRAM_ID(PROCESS_NAME);
+		historyVoEx.setSTATE("FILTERING");
+		historyVoEx.setDESCRIPT("필터 처리 됨");
 		for(Path p : filterList) {
 			fileMove(p, ERROR_PATH);
-			historyVo.setTARGET(path.toString());
-			historyVo.setSTATE("FILTERING");
-			historyVo.setDESCRIPT("필터 처리 됨");
-			makeHistory(historyVo);
+			historyVoEx.setTARGET(path.toString());
+			makeHistory(historyVoEx);
 			LOGGER.info("{} 파일 필터 처리 됨", p.toString());
 		}
 
@@ -143,8 +145,7 @@ public abstract class Filter {
 	}
 	
 	private void makeHistory(HistoryVo historyVo) {
-		String logMsg = HistoryManager.getInstance().recordHistory(historyVo);
-		if(StringUtils.isNotBlank(logMsg)) LOGGER.info("히스토리에러:{}, LOG={}",logMsg, gson.toJson(historyVo));
+		HistoryManager.getInstance().recordHistory(historyVo,DBMS_ID);
 	}
 	
 	private void sendAlarm(String msg) {

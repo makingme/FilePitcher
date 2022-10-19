@@ -43,6 +43,7 @@ public class SqlSessionManager {
 	}
 	
 	public SqlSessionFactory getSqlSessionFactory(String id) {
+		if(id == null) return getSqlSessionFactory();
 		return sqlSessionFactoryMap.get(id);
 	}
 	

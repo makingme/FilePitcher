@@ -6,6 +6,10 @@ import java.util.Map;
 
 public class TaskVo {
 
+	public TaskVo() {}
+	public TaskVo(Path TARGET_PATH) {
+		this.TARGET_PATH = TARGET_PATH;
+	}
 	private Path TARGET_PATH;
 	private String RESULT_MESSAGE = null;
 	private Map<String, Object> FREE_MAP = new HashMap<String, Object>(3);

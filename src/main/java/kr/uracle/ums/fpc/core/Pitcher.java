@@ -1,6 +1,19 @@
 package kr.uracle.ums.fpc.core;
 
 
+import kr.uracle.ums.fpc.enums.PATH_KIND;
+import kr.uracle.ums.fpc.enums.PitcherState;
+import kr.uracle.ums.fpc.tps.TpsManager;
+import kr.uracle.ums.fpc.vo.config.AlarmConfigVo;
+import kr.uracle.ums.fpc.vo.config.ModuleConfigaVo;
+import kr.uracle.ums.fpc.vo.config.PitcherConfigVo;
+import kr.uracle.ums.fpc.vo.config.RootConfigVo;
+import kr.uracle.ums.fpc.vo.module.HistoryVo;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -11,27 +24,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
-
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import kr.uracle.ums.fpc.enums.PATH_KIND;
-import kr.uracle.ums.fpc.enums.PitcherState;
-import kr.uracle.ums.fpc.tps.TpsManager;
-import kr.uracle.ums.fpc.vo.config.AlarmConfigVo;
-import kr.uracle.ums.fpc.vo.config.ModuleConfigaVo;
-import kr.uracle.ums.fpc.vo.config.PitcherConfigVo;
-import kr.uracle.ums.fpc.vo.config.RootConfigVo;
-import kr.uracle.ums.fpc.vo.module.TaskVo;
-import kr.uracle.ums.fpc.vo.module.HistoryVo;
 
 public class Pitcher extends Thread{
 	
@@ -48,9 +44,10 @@ public class Pitcher extends Thread{
 	private final PitcherConfigVo PITCHER_CONFIG;
 	private final AlarmConfigVo ALARM_CONFIG;
 
-	private final HistoryVo HISTORY_VO = new HistoryVo();
-
 	private final String PATTERN_OF_DATE;
+
+	private final String SERVER_ID;
+	private final String DBMS_ID;
 
 	private final int MAX_THREAD;
 	private long CYCLE_TIME = 30*1000;
@@ -58,18 +55,11 @@ public class Pitcher extends Thread{
 	
 	private long startTime = 0;
 	private long leadTime =0;
-	
-	protected List<ModuleManager> moduleManagerList;
-			
+
 	private Detect detect = null;
 	private Filter filter = null;
-	private Module preModule = null;
-	private Module mainModule = null;
-	private Module postModule = null;
-	
-	private ModuleConfigaVo preConfig = null;
-	private ModuleConfigaVo mainConfig = null;
-	private ModuleConfigaVo postConfig = null;
+
+	private ModuleExecutorPool pool = null;
 	
 	public Pitcher(String name, RootConfigVo rootConfigBean, PitcherConfigVo config) {
 		setName(name);
@@ -78,17 +68,12 @@ public class Pitcher extends Thread{
 		this.PITCHER_CONFIG = config;
 
 		PATTERN_OF_DATE = config.getSAVE_DIRECTORY();
-
-		HISTORY_VO.setHISTORY_TYPE(config.getHISTORY_TYPE());
-		HISTORY_VO.setEXECUTE_INFO(config.getHISTORY_INFO());
-		
 		MAX_THREAD = config.getMAX_THREAD() <=0 ? 5: config.getMAX_THREAD();
+		SERVER_ID = getHostName();
+		DBMS_ID = config.getDBMS_ID();
 	}
 
 	public boolean initailize(){
-		// 파일 처리 핸들러 관리 리스트
-		moduleManagerList = new ArrayList<ModuleManager>(MAX_THREAD);
-		
 		// 수행 주기 설정
 		if(PITCHER_CONFIG.getCYCLE() != null && PITCHER_CONFIG.getCYCLE() > 0) {
 			CYCLE_TIME = PITCHER_CONFIG.getCYCLE();
@@ -98,8 +83,7 @@ public class Pitcher extends Thread{
 		PATH_MAP.put(PATH_KIND.PROCESS, Paths.get(PITCHER_CONFIG.getPROCESS_PATH()));
 		PATH_MAP.put(PATH_KIND.SUCCESS, Paths.get(PITCHER_CONFIG.getSUCCESS_PATH()));
 		PATH_MAP.put(PATH_KIND.ERROR, Paths.get(PITCHER_CONFIG.getERROR_PATH()));
-		
-		HISTORY_VO.setSERVER_ID(getHostName());
+
 		// DETECT 생성
 		ModuleConfigaVo detectConfig = PITCHER_CONFIG.getDETECTION();
 		if(ObjectUtils.isEmpty(detectConfig) || StringUtils.isBlank(detectConfig.getCLASS_NAME())) {
@@ -121,6 +105,8 @@ public class Pitcher extends Thread{
 		ModuleConfigaVo filterConfig = PITCHER_CONFIG.getFILTER();
 		if(ObjectUtils.isNotEmpty(filterConfig) && StringUtils.isNotBlank(filterConfig.getCLASS_NAME())) {
 			filterConfig.setPATH_MAP(PATH_MAP);
+			filterConfig.setSERVER_ID(SERVER_ID);
+			filterConfig.setDBMS_ID(DBMS_ID);
 			filter = generateModule(filterConfig, ALARM_CONFIG,  Filter.class);
 			if(filter == null) return false;
 			try {
@@ -133,74 +119,51 @@ public class Pitcher extends Thread{
 		}
 		
 		boolean isOk = false;
+		Map<String, ModuleConfigaVo> configaVoMap = new HashMap<String, ModuleConfigaVo>(3);
 		// 전처리기 생성
-		preConfig = PITCHER_CONFIG.getPREMODULE();
+		final ModuleConfigaVo preConfig = PITCHER_CONFIG.getPREMODULE();
 		if(ObjectUtils.isNotEmpty(preConfig) && StringUtils.isNotBlank(preConfig.getCLASS_NAME())) {
 			preConfig.setPATH_MAP(PATH_MAP);
-			preModule = generateModule(preConfig, ALARM_CONFIG, Module.class);
-			if(preModule == null) return false;
-
-			try {
-				isOk = preModule.initialize();
-			} catch (Exception e) {
-				LOGGER.error("["+preModule.getPROCESS_NAME()+"] PRE-MODULE 초기화 중 에러 발생", e);
-				return false;
-			}
-			if(isOk == false) {
-				LOGGER.error("PREMODULE 초기화 실패로 기동 중지");
-				return false;
-			}
-			LOGGER.info("[{}] PREMODULE 초기화 완료:", preModule.getPROCESS_NAME());
+			preConfig.setSERVER_ID(SERVER_ID);
+			preConfig.setDBMS_ID(DBMS_ID);
+			configaVoMap.put("PRE", preConfig);
 		}
 		
 		// 본처리기 생성
-		mainConfig = PITCHER_CONFIG.getMAINMODULE();
+		final ModuleConfigaVo mainConfig = PITCHER_CONFIG.getMAINMODULE();
 		if(ObjectUtils.isNotEmpty(mainConfig) && StringUtils.isNotBlank(mainConfig.getCLASS_NAME())) {
 			mainConfig.setPATH_MAP(PATH_MAP);
-			mainModule = generateModule(mainConfig, ALARM_CONFIG, Module.class);
-			if(mainModule == null) return false;
-
-			try {
-				isOk = mainModule.initialize();
-			} catch (Exception e) {
-				LOGGER.error("["+mainModule.getPROCESS_NAME()+"] MAIN-MODULE 초기화 중 에러 발생", e);
-				return false;
-			}
-			if(isOk == false) {
-				LOGGER.error("MAINMODULE 초기화 실패로 기동 중지");
-				return false;
-			}
-			LOGGER.info("[{}] MAINMODULE 초기화 완료:", mainModule.getPROCESS_NAME());
+			mainConfig.setSERVER_ID(SERVER_ID);
+			mainConfig.setDBMS_ID(DBMS_ID);
+			configaVoMap.put("MAIN", mainConfig);
 		}
 		
 		// 후처리기 생성
-		postConfig = PITCHER_CONFIG.getPOSTMODULE();
+		final ModuleConfigaVo postConfig = PITCHER_CONFIG.getPOSTMODULE();
 		if(ObjectUtils.isNotEmpty(postConfig) && StringUtils.isNotBlank(postConfig.getCLASS_NAME())) {
 			postConfig.setPATH_MAP(PATH_MAP);
-			postModule = generateModule(postConfig, ALARM_CONFIG, Module.class);
-			if(postModule == null) return false;
-
-			try {
-				isOk = postModule.initialize();
-			} catch (Exception e) {
-				LOGGER.error("["+postModule.getPROCESS_NAME()+"] POST-MODULE 초기화 중 에러 발생", e);
-				return false;
-			}
-			if(isOk == false) {
-				LOGGER.error("POSTMODULE 초기화 실패로 기동 중지");
-				return false;
-			}
-			LOGGER.info("[{}] POSTMODULE 초기화 완료:", postModule.getPROCESS_NAME());
+			postConfig.setSERVER_ID(SERVER_ID);
+			postConfig.setDBMS_ID(DBMS_ID);
+			configaVoMap.put("POST", postConfig);
 		}
-		
+
+		pool = new ModuleExecutorPool(SERVER_ID, DBMS_ID, getName(), MAX_THREAD, configaVoMap, ALARM_CONFIG);
+		try {
+			pool.initialize();
+		} catch (Exception e) {
+			LOGGER.error("모듈 초기화 중 에러 발생:"+e.getMessage(), e);
+			return false;
+		}
 		return true;
 	}
 	
 	public void close() {
 		isRun = false;
+		if(pool != null)pool.closeAll();
 	}
 	
 	public void run() {
+		pool.execute();
 		int errorCnt = 1;
 		startTime = 0;
 		Path  TARGET_PATH= PATH_MAP.get(PATH_KIND.DETECT);
@@ -252,7 +215,7 @@ public class Pitcher extends Thread{
 			// 지정 필터 수행
 			if(filter != null) {
 				state = PitcherState.FILTERING;
-				boolean isOk  = filter.filtering(pathList, HISTORY_VO, yyyyMMdd);
+				boolean isOk  = filter.filtering(pathList, yyyyMMdd);
 				if(isOk == false) {
 					errorCnt +=1;
 					LOGGER.info("필터 수행 중 에러 발생으로 {} 동안 휴식", CYCLE_TIME * errorCnt);
@@ -270,59 +233,23 @@ public class Pitcher extends Thread{
 			}
 			TpsManager.getInstance().addInputCnt(totalCnt);
 
-			Predicate<ModuleManager> codition = m -> m == null || m.isAlive() ==false;
 			while(pathList.size() > 0) {
-				// 만료된 핸들러 제거
-				moduleManagerList.removeIf(codition);
-				
-				// 현재 가용 쓰레드 갯수 확인
-				int freeManagerCnt = MAX_THREAD - moduleManagerList.size();
-				if(freeManagerCnt <= 0) {
+				ModuleExecutor executor = pool.getExecutor();
+				if(executor == null){
 					final long waitForfree = 100;
 					try {
-						LOGGER.debug("가용 모듈 매니저 없음으로 대기:{}ms", waitForfree);
+						LOGGER.debug("가용 모듈 없음으로 대기:{}ms", waitForfree);
 						sleep(waitForfree);
 					} catch (InterruptedException e) {
-						LOGGER.info("가용 모들 매니저 생성 대기 중 에러", e);
+						LOGGER.info("가용 모들 생성 대기 중 에러", e);
 					}
 					continue;
 				}
-				
-				// 가용 가능한 쓰레드 갯수 만큼 파일 처리
-				int fileCnt = pathList.size();
-				if(fileCnt > freeManagerCnt) fileCnt =  freeManagerCnt;
-				
-				// 핸들러 파일 처리
-				TpsManager.getInstance().addProcessCnt(fileCnt);
-				for(int i =0; i<fileCnt ; i++) {
-					Path p = pathList.remove(0);
-					final TaskVo taskVo = new TaskVo();
-					taskVo.setTARGET_PATH(p);
-					
-					final HistoryVo historyVo = new HistoryVo();
-					historyVo.setSERVER_ID(HISTORY_VO.getSERVER_ID());
-					historyVo.setHISTORY_TYPE(HISTORY_VO.getHISTORY_TYPE());
-					historyVo.setEXECUTE_INFO(HISTORY_VO.getEXECUTE_INFO());
-					ModuleManager manager = new ModuleManager(taskVo, historyVo, yyyyMMdd);
-					if(mainModule != null) {
-						Module newMain = generateModule(mainConfig, ALARM_CONFIG, Module.class);
-						manager.setMainModule(newMain);
-					}
-					
-					if(postModule != null) {
-						Module newPost = generateModule(postConfig, ALARM_CONFIG, Module.class);
-						manager.setPostModule(newPost);
-					}
-					
-					if(preModule != null) {
-						Module newPre = generateModule(preConfig, ALARM_CONFIG, Module.class);
-						boolean isLastModule = (mainModule == null && postModule == null);
-						if(manager.executeModule(newPre, isLastModule) == false) continue;
-					}
-										
-					moduleManagerList.add(manager);
-					manager.start();
-				}
+
+				TpsManager.getInstance().addProcessCnt(1);
+				Path p = pathList.get(0);
+				boolean isOk = executor.putWork(p, yyyyMMdd);
+				if(isOk)pathList.remove(p);
 			}
 
 			//에러 횟수 초기화

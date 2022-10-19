@@ -29,7 +29,7 @@ public class PitcherManager extends Thread{
 	private final static Logger LOGGER = LoggerFactory.getLogger(PitcherManager.class);
 	private final static Logger ERROR = LoggerFactory.getLogger("ERROR");
 	
-	private final List<Pitcher> pitcherExList = new ArrayList<Pitcher>(10);
+	private final List<Pitcher> pitcherList = new ArrayList<Pitcher>(10);
 
 	private final RootConfigVo ROOT_CONFIG;
 
@@ -51,7 +51,7 @@ public class PitcherManager extends Thread{
 				return false;
 			}
 			px.start();
-			pitcherExList.add(px);
+			pitcherList.add(px);
 		}
 		
 		return true;
@@ -59,8 +59,8 @@ public class PitcherManager extends Thread{
 
 	public List<String> monitoring(){
 		long now = System.currentTimeMillis();
-		List<String> alarmMsgList = new ArrayList<>(pitcherExList.size());
-		for(Pitcher p: pitcherExList) {
+		List<String> alarmMsgList = new ArrayList<>(pitcherList.size());
+		for(Pitcher p: pitcherList) {
 			if( p.getState() == State.TERMINATED) {
 				alarmMsgList.add(p.getName()+" 종료 됨");
 				LOGGER.warn("{} 종료 됨, 확인 필요", p.getName());
@@ -96,7 +96,7 @@ public class PitcherManager extends Thread{
 	}
 
 	public void setMaster(boolean isMaster){
-		for(Pitcher p: pitcherExList) {
+		for(Pitcher p: pitcherList) {
 			p.changeMaster(isMaster);
 		}
 	}
@@ -104,7 +104,7 @@ public class PitcherManager extends Thread{
 	@Override
 	public void run() {
 		LOGGER.info("종료 요청 시그널에 따른 종료");
-		for(Pitcher px : pitcherExList) {
+		for(Pitcher px : pitcherList) {
 			px.close();
 		}
 		
