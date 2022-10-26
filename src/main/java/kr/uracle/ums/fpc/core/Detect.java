@@ -83,7 +83,7 @@ public abstract class Detect {
 	 * @param	:	path : 탐색 경로(절대 경로)
 	 * @return	:	탐색된 파일 PATH 목록, NULL RETURN 시 에러로 간주, 탐색 파일 없을 경우 SIZE 0인 INSTANCE RETURN
 	 */
-	abstract public List<Path> process(Path path)throws Exception;
+	abstract public List<Path> process(Path path)throws Exception; 
 	
 	public List<Path> detect(Path path){
 		List<Path> pathList;
