@@ -3,7 +3,7 @@
 	"BASE_PATH" : "D:\\TEST\\PITCHEREX",
 	"MYBATIS_PATH" :"D:\\STORE\\SOURCES\\URACLE\\ums\\ums-file-pitcher\\ums-file-pitcher.3.0.X\\trunk\\conf\\mybatis-config.xml",
 	"UMS_IPADREESS" : ["http://localhost:8080/", "http://211.241.199.139:8080/"],
-	
+	"PITCHER_MONIT_CYCLE" : 60000,
 	"UMS_MONIT": {
 		"SERVER_ID": "AP1_FILEPTICHER",
 		"PROGRAM_ID": "FILE_PITCHER",
@@ -34,6 +34,7 @@
 			"ERROR_PATH": 	"ERROR",
 			"MAX_THREAD": 10,
 			"CYCLE": 3000,
+			"HANG_TIMEOUT": 60000,
 			"DBMS_ID" : "development",
 			"SAVE_DIRECTORY": "yyyyMMdd",
 			"DETECTION": {
@@ -115,6 +116,13 @@
 			"기본값" 	: "NULL",
 			"타입" 		: "STRING ARRAY",
 			"길이제한"	: "0"
+		},
+		"PITCHER_MONIT_CYCLE" : {
+			"설명" 		: "프로세스 상태, HA, 쓰레드 행 체크 모니터링 주기",
+			"필수여부" 	: "N",
+			"기본값" 	: "60000",
+			"타입" 		: "LONG",
+			"길이제한"	: "MAX LONG"
 		},
 		"UMS_MONIT": {
 			"설명" 		: "모니터링 정보 설정",
@@ -274,6 +282,13 @@
 					"설명" 		: "PITCHER 동작 주기",
 					"필수여부" 	: "N",
 					"기본값" 	: "30000",
+					"타입" 		: "LONG",
+					"길이제한"	: "LONG MAX"
+				},
+				"HANG_TIMEOUT": {
+					"설명" 		: "PITCHER 수행 타임아웃-쓰레드 행 여부 판단 시간",
+					"필수여부" 	: "N",
+					"기본값" 	: "60000",
 					"타입" 		: "LONG",
 					"길이제한"	: "LONG MAX"
 				},

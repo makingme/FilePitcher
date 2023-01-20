@@ -4,6 +4,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import kr.uracle.ums.fpc.utils.AESCipherManager;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.datasource.DataSourceFactory;
 import org.slf4j.Logger;
@@ -25,7 +26,7 @@ public class HikariCpDataSource implements DataSourceFactory{
 	}
 	
 	private static class HikariCpInstance{
-		private static HikariCpDataSource instance = new HikariCpDataSource();
+		private static final HikariCpDataSource instance = new HikariCpDataSource();
 	}
 		
 	@Override
@@ -35,8 +36,14 @@ public class HikariCpDataSource implements DataSourceFactory{
 		String jdbcUrl = props.getProperty("url");
 		String userName = props.getProperty("username");
 		String password = props.getProperty("password");
-		
 		String name = props.getProperty("name");
+		String dbcp_enc = props.getProperty("dbcp_enc", "N");
+		
+		if(dbcp_enc.equalsIgnoreCase("Y")){
+			userName = AESCipherManager.getInstance().AES128_Decode(userName);
+			password = AESCipherManager.getInstance().AES128_Decode(password);
+			LOGGER.debug("DBMS 복호화 수행, userName:{}, password:{}", userName, password);
+		}
 		
 		if(StringUtils.isNotBlank(name)) {
 			LOGGER.info("DataSourceName:{}", name);

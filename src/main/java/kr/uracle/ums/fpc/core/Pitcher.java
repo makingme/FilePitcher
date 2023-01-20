@@ -38,6 +38,8 @@ public class Pitcher extends Thread{
 	
 	private PitcherState state = PitcherState.READY;
 
+	private final String PITCHER_NAME;
+	
 	private boolean isRun = true;
 	private boolean isMaster = false;
 	
@@ -63,6 +65,7 @@ public class Pitcher extends Thread{
 	
 	public Pitcher(String name, RootConfigVo rootConfigBean, PitcherConfigVo config) {
 		setName(name);
+		this.PITCHER_NAME = name;
 		this.isMaster = rootConfigBean.getDUPLEX().isMASTER();
 		this.ALARM_CONFIG = rootConfigBean.getALARM();
 		this.PITCHER_CONFIG = config;
@@ -165,7 +168,6 @@ public class Pitcher extends Thread{
 	public void run() {
 		pool.execute();
 		int errorCnt = 1;
-		startTime = 0;
 		Path  TARGET_PATH= PATH_MAP.get(PATH_KIND.DETECT);
 		while(isRun) {
 			state = PitcherState.STANDBY;
@@ -180,6 +182,7 @@ public class Pitcher extends Thread{
 
 			// 마스터가 아니면 휴식, 매니저가 마스터 파일을 감시하여 이상 시 슬레이브에서 마스터로 전환 함
 			if(isMaster == false) {
+				startTime = 0;
 				LOGGER.info("현재 슬레이브로 {} 동안 휴식", CYCLE_TIME* errorCnt);
 				continue;
 			}
@@ -278,8 +281,16 @@ public class Pitcher extends Thread{
 	
 	public long getLeadTime() { return leadTime;}
 	
-	public PitcherState getPitcherState() { return state; }
+	public String checkThreadHang(long now){
+		if(startTime<=0)return null;
+		long leadTime = now - startTime;
+		if(leadTime > PITCHER_CONFIG.getHANG_TIMEOUT()){
+			return PITCHER_NAME+" 처리 지연 중, 현재 처리 소요 시간:"+ leadTime;
+		}
+		return null;
+	}
 	
+	public PitcherState getPitcherState() { return state; }
 	
 	private boolean createDirectory() {
 		for(Entry<PATH_KIND, Path> element : PATH_MAP.entrySet()) {

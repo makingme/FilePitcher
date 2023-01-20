@@ -3,14 +3,13 @@ package kr.uracle.ums.fpc.vo.config;
 import kr.uracle.ums.fpc.enums.HISTORY_KIND;
 
 public class PitcherConfigVo {
-			
 	private String DETECT_PATH;
 	private String PROCESS_PATH;
 	private String SUCCESS_PATH;
 	private String ERROR_PATH;
 	private int MAX_THREAD = 10;
 	private Long CYCLE;
-
+	private Long HANG_TIMEOUT;
 	private String DBMS_ID;
 
 	private String SAVE_DIRECTORY;
@@ -38,6 +37,10 @@ public class PitcherConfigVo {
 	
 	public Long getCYCLE() { return CYCLE; }
 	public void setCYCLE(Long cYCLE) { CYCLE = cYCLE; }
+
+	public Long getHANG_TIMEOUT() {return HANG_TIMEOUT;}
+	public void setHANG_TIMEOUT(Long HANG_TIMEOUT) {this.HANG_TIMEOUT = HANG_TIMEOUT;}
+	
 	public String getDBMS_ID() {return DBMS_ID;}
 	public void setDBMS_ID(String DBMS_ID) {this.DBMS_ID = DBMS_ID;}
 

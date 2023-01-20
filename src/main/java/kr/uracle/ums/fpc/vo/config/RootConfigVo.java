@@ -13,6 +13,8 @@ public class RootConfigVo {
 	
 	private List<String> UMS_IPADREESS = new ArrayList<String>(5);
 	
+	private long PITCHER_MONIT_CYCLE = 1*60*1000;
+	
 	private UmsMonitoringConfigVo UMS_MONIT;
 	
 	private DuplexConfigVo DUPLEX;
@@ -29,6 +31,9 @@ public class RootConfigVo {
 	
 	public List<String> getUMS_IPADREESS() { return UMS_IPADREESS;	}
 	public void setUMS_IPADREESS(List<String> uMS_IPADREESS) { UMS_IPADREESS = uMS_IPADREESS;	}
+
+	public long getPITCHER_MONIT_CYCLE() {return PITCHER_MONIT_CYCLE;}
+	public void setPITCHER_MONIT_CYCLE(long PITCHER_MONIT_CYCLE) {this.PITCHER_MONIT_CYCLE = PITCHER_MONIT_CYCLE;}
 	
 	public UmsMonitoringConfigVo getUMS_MONIT() { return UMS_MONIT; }
 	public void setUMS_MONIT(UmsMonitoringConfigVo uMS_MONIT) { UMS_MONIT = uMS_MONIT; }

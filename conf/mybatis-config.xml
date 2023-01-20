@@ -4,18 +4,21 @@
   "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
 	<properties>
-	  <property name="dbms" value="ORACLE"/>
+		<!-- path value 마지막 문자열은 무조건 File.seperator로 끝나야함 -->
+		<property name="mapper_conf" value="D:\STORE\SOURCES\URACLE\ums\ums-file-pitcher\ums-file-pitcher.3.0.X\trunk\conf\sqlmap\"/>
+	  	<property name="dbms" value="ORACLE"/>
 	</properties>
 
 	<environments default="development">
 		<environment id="development">
 			<transactionManager type="JDBC" />
 			<dataSource type="kr.uracle.ums.fpc.dbms.HikariCpDataSource">
-				<property name="name" value="MainDataSource" />
+				<property name="name" value="ORACLE:243" />
 				<property name="driver" value="oracle.jdbc.OracleDriver" />
 				<property name="url" value="jdbc:oracle:thin:@211.241.199.243:1521:orcl" />
-				<property name="username" value="UMS30" />
-				<property name="password" value="uracle1234" />
+				<property name="username" value="mBsmWlSJPI38/F3cBVxrjg==" />
+				<property name="password" value="f+5UGh5wXTIzRHm70JSYKA==" />
+				<property name="dbcp_enc" value="Y" />
 				<!-- 
 				<property name="idletimeout" 		value="1000" />
 				<property name="minimumIdle" 		value="1000" />
@@ -26,28 +29,29 @@
 				 -->
 			</dataSource>
 		</environment>
-
-		<environment id="temp">
-			<transactionManager type="JDBC" />
-			<dataSource type="kr.uracle.ums.fpc.dbms.HikariCpDataSource">
-				<property name="name" value="MainDataSource" />
-				<property name="driver" value="oracle.jdbc.OracleDriver" />
-				<property name="url" value="jdbc:oracle:thin:@211.241.199.243:1521:orcl" />
-				<property name="username" value="UMS30" />
-				<property name="password" value="uracle1234" />
-				<!-- 
-				<property name="idletimeout" 		value="0" />
-				<property name="minimumIdle" 		value="0" />
-				<property name="maximumpoolsize" 	value="0" />
-				<property name="maxlifetime" 		value="0" />
-				<property name="connectiontimeout" 	value="0" />
-				<property name="initializationfailtimeout" value="0" />
-				 -->
+		<!-- 
+                <environment id="temp">
+                    <transactionManager type="JDBC" />
+                    <dataSource type="kr.uracle.ums.fpc.dbms.HikariCpDataSource">
+                        <property name="name" value="MainDataSource" />
+                        <property name="driver" value="oracle.jdbc.OracleDriver" />
+                        <property name="url" value="jdbc:oracle:thin:@211.241.199.66:1521:orcl" />
+                        <property name="username" value="UMS30" />
+                        <property name="password" value="uracle1234" />
+                        
+                        <property name="idletimeout" 		value="0" />
+                        <property name="minimumIdle" 		value="0" />
+                        <property name="maximumpoolsize" 	value="0" />
+                        <property name="maxlifetime" 		value="0" />
+                        <property name="connectiontimeout" 	value="0" />
+                        <property name="initializationfailtimeout" value="0" />
+                        
 			</dataSource>
 		</environment>
-
+ -->
 	</environments>
 	<mappers>
-		<mapper url="file:D:\STORE\SOURCES\URACLE\ums\ums-file-pitcher\ums-file-pitcher.3.0.X\trunk\conf\sqlmap\ORACLE\\history.xml" />
+		<!-- 변수와 변수 사이에 File.seperator를 인식 하지 못함으로 File.seperator는 변수와 변수 사이에 사용 금지 -->
+		<mapper url="file:${mapper_conf}${dbms}\history.xml" />
 	</mappers>
 </configuration>

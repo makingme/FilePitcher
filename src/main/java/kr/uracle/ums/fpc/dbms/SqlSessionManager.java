@@ -1,9 +1,11 @@
 package kr.uracle.ums.fpc.dbms;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -29,6 +31,17 @@ public class SqlSessionManager {
 	public boolean load(InputStream inputStream, String id) {
 		try {
 			sqlSessionFactoryMap.put(id, new SqlSessionFactoryBuilder().build(inputStream, id));	
+		}catch(Exception e) {
+			LOGGER.error(id+" environment 로드 중 에러 발생", e);
+			return false;
+		}
+		if(FIRST_KEY == null) FIRST_KEY = id;
+		return true;
+	}
+
+	public boolean load(String resource, String id) {
+		try(InputStream inputStream = new FileInputStream(resource)) {
+			sqlSessionFactoryMap.put(id, new SqlSessionFactoryBuilder().build(inputStream, id));
 		}catch(Exception e) {
 			LOGGER.error(id+" environment 로드 중 에러 발생", e);
 			return false;

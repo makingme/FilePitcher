@@ -20,6 +20,12 @@
 			<version>${umssdk.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>kr.msp</groupId>
+			<artifactId>msp-core</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		
 		<!-- Logging with SLF4J & LogBack -->
 		<dependency>
 			<groupId>org.slf4j</groupId>
