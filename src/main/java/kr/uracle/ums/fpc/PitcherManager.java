@@ -122,7 +122,9 @@ public class PitcherManager extends Thread{
 			// 본래 마스터가 아닌 경우 파일 수정 시간 변동 여부 체크
 			FileTime f = Files.getLastModifiedTime(dPath);
 			// 변동 시간이 지정 시간보다 오래 되었다면 마스터 프로세스 이상으로 간주하여 마스터로 동작
-			if(now - f.toMillis() > EXPIRY_TIME){
+			long diffTime = now - f.toMillis();
+			if(diffTime > EXPIRY_TIME){
+				LOGGER.warn("마스터 프로세스가 {}초 동안 동작 하지 않음", diffTime);
 				isMaster = true;
 			}
 			
@@ -279,22 +281,20 @@ public class PitcherManager extends Thread{
 				boolean isMaster = manager.masterCheck(MASTER, DUPLEX_FILE, DUPLEX_EXPIRY);
 				
 				if(isMaster != MASTER){
-					// 매니저가 관리하는 모든 Pitcher 슬레이브로 변경
+					// 매니저가 관리하는 모든 Pitcher 마스터 상태 변경
 					manager.setMaster(isMaster);
 					
 					if(MASTER){
 						// 마스터가 대기 상태로 변경
-						if(ALARM_CONFIG.isACTIVATION())UmsAlarmSender.getInstance().sendAlarm(ALARM_CONFIG.getSEND_CHANNEL() , ALARM_CONFIG.getAPI_PATH(), hostInfo+" 파일 처리기(마스터)가 대기(슬레이브) 상태로 전환 됨");
+						if(ALARM_CONFIG.isACTIVATION())UmsAlarmSender.getInstance().sendAlarm(ALARM_CONFIG.getSEND_CHANNEL() , ALARM_CONFIG.getAPI_PATH(), hostInfo+" 파일 처리기(마스터)가 대기 상태로 전환 되어 파일 처리 중지");
 						LOGGER.info(hostInfo+" 파일 처리기가 대기로 변경");
 					}else{
 						// 슬레이브가 활성화 상태로 변경
-						if(ALARM_CONFIG.isACTIVATION())UmsAlarmSender.getInstance().sendAlarm(ALARM_CONFIG.getSEND_CHANNEL() , ALARM_CONFIG.getAPI_PATH(), hostInfo+" 파일 처리기(슬레이브)가 활성화(마스터) 상태로 전환 됨");
+						if(ALARM_CONFIG.isACTIVATION())UmsAlarmSender.getInstance().sendAlarm(ALARM_CONFIG.getSEND_CHANNEL() , ALARM_CONFIG.getAPI_PATH(), hostInfo+" 파일 처리기(슬레이브)가 활성화 상태로 전환 되어 파일 처리 수행");
 						LOGGER.info(hostInfo+" 파일 처리기가 마스터로 변경");
 					}
 					
 				}
-				// 마스터 변경
-				MASTER = isMaster;
 			}
 			
 			// 매니저가 관리하는 모든 Pitcher 상태 모니터링 - Alive, Hang

@@ -8,7 +8,6 @@ import kr.uracle.ums.fpc.vo.config.AlarmConfigVo;
 import kr.uracle.ums.fpc.vo.config.ModuleConfigaVo;
 import kr.uracle.ums.fpc.vo.config.PitcherConfigVo;
 import kr.uracle.ums.fpc.vo.config.RootConfigVo;
-import kr.uracle.ums.fpc.vo.module.HistoryVo;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -186,6 +185,7 @@ public class Pitcher extends Thread{
 				LOGGER.info("현재 슬레이브로 {} 동안 휴식", CYCLE_TIME* errorCnt);
 				continue;
 			}
+			
 			if(createDirectory() == false) {
 				continue;
 			}
